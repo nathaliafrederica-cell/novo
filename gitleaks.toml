@@ -1,22 +1,52 @@
-name: Gitleaks Scan
+# ---------------------------------------------------------------------
+# CONFIGURAÇÃO CUSTOMIZADA DO GITLEAKS
+# ---------------------------------------------------------------------
 
-on:
-  push:
-    branches: [ main, master, develop ]
-  pull_request:
-    branches: [ main, master, develop ]
+title = "gitleaks config"
 
-jobs:
-  scan:
-    name: Gitleaks Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # O Gitleaks precisa do histórico completo para escanear commits passados
+# --- REGRAS PERSONALIZADAS (RULES) ---
+# Aqui você define padrões que o Gitleaks original não conhece por padrão.
 
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+[[rules]]
+id = "my-company-api-key"
+description = "Detectou uma chave de API interna da Minha Empresa"
+regex = '''(?i)mycorp_[a-z0-9]{32}''' # Exemplo: mycorp_a1b2c3d4... (32 caracteres)
+secretGroup = 0
+keywords = ["mycorp_"]
+
+[[rules]]
+id = "generic-password-assignment"
+description = "Detectou uma possível senha atribuída a uma variável"
+regex = '''(?i)(password|passwd|senha|secret|token)\s*[:=]\s*['"][^'"]{6,}['"]'''
+keywords = ["password", "passwd", "senha", "secret"]
+
+# --- REGRAS DE PERMISSÃO / EXCLUSÃO (ALLOWLIST) ---
+# Use isso para evitar falsos positivos globais no seu projeto.
+
+[allowlist]
+description = "Permite arquivos e caminhos globais comuns que não contêm secrets reais"
+
+# 1. Ignorar caminhos ou arquivos específicos (por Regex)
+paths = [
+    '''node_modules/''',
+    '''package-lock\.json''',
+    '''go\.sum''',
+    '''\.gitleaksignore''',
+    '''tests/mocks/.*''' # Ignora qualquer arquivo dentro de pastas de mock de testes
+]
+
+# 2. Ignorar extensões de arquivos inteiras
+extensions = [
+    "png",
+    "jpg",
+    "jpeg",
+    "gif",
+    "ico",
+    "pdf"
+]
+
+# 3. Ignorar termos ou hashes específicos que seriam pegos pelas regras
+regexes = [
+    '''[a-f0-9]{40}''', # Ignora hashes SHA-1 genéricos (comuns em commits/logs)
+    '''EXAMPLE_TOKEN_FOR_DOCUMENTATION'''
+]
