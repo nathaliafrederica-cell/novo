@@ -1,0 +1,2 @@
+Bash
+semgrep --version
