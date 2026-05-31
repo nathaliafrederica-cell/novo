@@ -1,5 +1,6 @@
 const API_KEY = process.env.API_KEY || "";
 const DB_PASSWORD = process.env.DB_PASSWORD || "";
+console.log("A senha carregada foi:", DB_PASSWORD ? "Definida" : "Vazia (Fallback usado)");
 
 fetch('db.json')
     .then(response => response.json())
