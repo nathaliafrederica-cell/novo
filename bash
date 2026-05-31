@@ -1,1 +1,1 @@
-npm install dotenv
+FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true
